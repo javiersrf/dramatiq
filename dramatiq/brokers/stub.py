@@ -82,7 +82,7 @@ class StubBroker(Broker):
         self.delay_queues.add(delayed_name)
         self.emit_after("declare_delay_queue", delayed_name)
 
-    def enqueue(self, message, *, delay=None):
+    def enqueue(self, message, *, headers=None, delay=None):
         """Enqueue a message.
 
         Parameters:

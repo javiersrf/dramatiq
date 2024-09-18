@@ -85,7 +85,7 @@ class RabbitmqBroker(Broker):
     .. _ConnectionParameters: https://pika.readthedocs.io/en/stable/modules/parameters.html
     """
 
-    def __init__(self, *, confirm_delivery=False, url=None, middleware=None, max_priority=None, parameters=None, **kwargs):
+    def __init__(self, *, confirm_delivery=False, url=None, middleware=None, max_priority=None, parameters=None, default_exchange="", **kwargs):
         super().__init__(middleware=middleware)
 
         if max_priority is not None and not (0 < max_priority <= 255):
@@ -120,6 +120,7 @@ class RabbitmqBroker(Broker):
         self.queues = set()
         self.queues_pending = set()
         self.state = local()
+        self.default_exchange = default_exchange
 
     @property
     def consumer_class(self):
@@ -296,7 +297,7 @@ class RabbitmqBroker(Broker):
             "x-message-ttl": DEAD_MESSAGE_TTL,
         })
 
-    def enqueue(self, message, *, delay=None):
+    def enqueue(self, message, *, headers=None, delay=None):
         """Enqueue a message.
 
         Parameters:
@@ -328,12 +329,13 @@ class RabbitmqBroker(Broker):
                 self.logger.debug("Enqueueing message %r on queue %r.", message.message_id, queue_name)
                 self.emit_before("enqueue", message, delay)
                 self.channel.basic_publish(
-                    exchange="",
+                    exchange=self.default_exchange,
                     routing_key=queue_name,
                     body=message.encode(),
                     properties=pika.BasicProperties(
                         delivery_mode=2,
                         priority=message.options.get("broker_priority"),
+                        headers=headers,
                     ),
                 )
                 self.emit_after("enqueue", message, delay)

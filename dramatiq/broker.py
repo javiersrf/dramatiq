@@ -201,7 +201,7 @@ class Broker:
         """
         raise NotImplementedError
 
-    def enqueue(self, message, *, delay=None):  # pragma: no cover
+    def enqueue(self, message, *, headers=None, delay=None):  # pragma: no cover
         """Enqueue a message on this broker.
 
         Parameters:

@@ -146,6 +146,7 @@ class Actor(Generic[P, R]):
         args: tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
         delay: Optional[timedelta | int] = None,
+        headers: Optional[timedelta | int] = None,
         **options,
     ) -> Message[R]:
         """Asynchronously send a message to this actor, along with an
@@ -167,7 +168,7 @@ class Actor(Generic[P, R]):
             delay = int(delay.total_seconds() * 1000)
 
         message = self.message_with_options(args=args, kwargs=kwargs, **options)
-        return self.broker.enqueue(message, delay=delay)
+        return self.broker.enqueue(message, headers=headers, delay=delay)
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
         """Synchronously call this actor.
